@@ -8,6 +8,7 @@ from os import urandom
 from random import random
 from uuid import UUID
 from base64 import b64decode
+from urllib.parse import urlencode
 
 from fastapi import (
     APIRouter,
@@ -423,6 +424,7 @@ async def email_verify(
     signature: str = Body(),
     log: Log_Fields = Depends(log_with_key)
 ) -> JSONResponse:
+    log.req_params = urlencode({'to': to}, True)
     if log.res_error != ErrorCode.OK:
         res = response_err(background_tasks, log)
         if log.res_error.http_status in (400, 403):

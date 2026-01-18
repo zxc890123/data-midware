@@ -1,0 +1,25 @@
+[project]
+name = "data-midware"
+authors = [
+  { name = "zxc890123", email = "23111750+zxc890123@users.noreply.github.com" },
+]
+requires-python = ">=3.14"
+classifiers = [
+  "Programming Language :: Python :: 3.14",
+  "License :: OSI Approved :: Apache Software License",
+]
+dynamic = ["version"]
+dependencies = [
+  "uvicorn[standard]",
+  "fastapi",
+  "sqlalchemy",
+  "aiosqlite",
+  "aiocache[redis]",
+  "cryptography",
+  "python-dotenv",
+  "elasticsearch[async]",
+  "influxdb-client[async]",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "data_midware.__version__"}

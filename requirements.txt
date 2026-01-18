@@ -2,7 +2,6 @@ uvicorn[standard]
 fastapi
 sqlalchemy
 aiosqlite
-uuid7
 aiocache[redis]
 cryptography
 python-dotenv

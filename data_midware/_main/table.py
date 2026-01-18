@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Uuid, Text, Integer, Boolean, Float, BINARY, JSON, ForeignKey, UniqueConstraint
 
-from uuid import uuid4
-from uuid_extensions import uuid7
+from uuid import uuid4, uuid7
 
 from .._share.db import Base
 

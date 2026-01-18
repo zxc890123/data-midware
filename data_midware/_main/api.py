@@ -60,7 +60,7 @@ from .._share.sql import (
     delete_multi,
     get_count
 )
-from .._share.batch import get_hash, check_cidr, match_ip, check_email_verify
+from .._share.batch import get_hash, check_cidr, match_ip
 from .._share.log import Log_Fields
 from .._share.api import (
     log_with_key,
@@ -139,7 +139,7 @@ async def register(
         hashed_email = get_hash(email)
         log.user_info['email'] = hashed_email
         _mark = 'check_email_verify'
-        if not await check_email_verify(b'POST /api/user', hashed_email):
+        if await default_cache.get(b'email_verify\xff' + hashed_email) != get_hash(b'POST /api/user', algorithm='md5'):
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
             res = response_err(background_tasks, log)
             await sleep(2 + random() * 2)
@@ -211,11 +211,14 @@ async def unregister(
 
     session = session_factory()
     try:
-        _email = b''
         if log.user_info['protect']:
             _mark = 'check_email_verify'
             _email = log.user_info['email2'] if log.user_info['email2'] else log.user_info['email']
-            if not await check_email_verify(b'DELETE /api/user', _email):
+            if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+                b'POST /api/user',
+                log.session_id.hex.encode(),
+                algorithm='md5'
+            ):
                 log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
                 res = response_err(background_tasks, log)
                 await sleep(2 + random() * 2)
@@ -242,8 +245,6 @@ async def unregister(
         await session.commit()
         _mark = 'default_cache.delete'
         await default_cache.delete(b'session_nonce\xff' + log.session_id.bytes)
-        if _email:
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -365,7 +366,9 @@ async def login(
 
         if _user['trashed_time'] >= 0:
             _mark = 'check_email_verify'
-            if not await check_email_verify(b'POST /api/user/session', hashed_email):
+            if await default_cache.get(b'email_verify\xff' + hashed_email) != get_hash(
+                b'POST /api/user/session', algorithm='md5'
+            ):
                 log.res_error = ErrorCode.USER_DELETED
                 res = response_err(background_tasks, log)
                 await sleep(2 + random() * 2)
@@ -712,11 +715,14 @@ async def user_update_config(
 
     session = session_factory()
     try:
-        _email = b''
         if log.user_info['protect']:
             _mark = 'check_email_verify'
             _email = log.user_info['email2'] if log.user_info['email2'] else log.user_info['email']
-            if not await check_email_verify(b'PUT /api/user/settings', _email):
+            if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+                b'PUT /api/user/settings',
+                log.session_id.hex.encode(),
+                algorithm='md5'
+            ):
                 log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
                 res = response_err(background_tasks, log)
                 await sleep(2 + random() * 2)
@@ -738,9 +744,6 @@ async def user_update_config(
         )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -788,11 +791,14 @@ async def user_change_email(
 
     session = session_factory()
     try:
-        _email = b''
         if log.user_info['protect']:
             _mark = 'check_email_verify'
             _email = log.user_info['email2'] if log.user_info['email2'] else log.user_info['email']
-            if not await check_email_verify(b'PUT /api/user/settings/email', _email):
+            if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+                b'PUT /api/user/settings/email',
+                log.session_id.hex.encode(),
+                algorithm='md5'
+            ):
                 log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
                 res = response_err(background_tasks, log)
                 await sleep(2 + random() * 2)
@@ -851,9 +857,6 @@ async def user_change_email(
         )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -903,7 +906,11 @@ async def user_change_email2(
     try:
         _mark = 'check_email_verify'
         _email = log.user_info['email2'] if log.user_info['email2'] else log.user_info['email']
-        if not await check_email_verify(b'PUT /api/user/settings/email2', _email):
+        if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+            b'PUT /api/user/settings/email2',
+            log.session_id.hex.encode(),
+            algorithm='md5'
+        ):
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
             res = response_err(background_tasks, log)
             await sleep(2 + random() * 2)
@@ -940,9 +947,6 @@ async def user_change_email2(
         )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -991,11 +995,14 @@ async def user_change_password(
 
     session = session_factory()
     try:
-        _email = b''
         if log.user_info['protect']:
             _mark = 'check_email_verify'
             _email = log.user_info['email2'] if log.user_info['email2'] else log.user_info['email']
-            if not await check_email_verify(b'PUT /api/user/settings/password', _email):
+            if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+                b'PUT /api/user/settings/password',
+                log.session_id.hex.encode(),
+                algorithm='md5'
+            ):
                 log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
                 res = response_err(background_tasks, log)
                 await sleep(2 + random() * 2)
@@ -1030,9 +1037,6 @@ async def user_change_password(
         await insert_history_config(session, log.user_id, log.start_time, log.ip, password=1)
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -1110,7 +1114,10 @@ async def user_reset_password(
 
         _mark = 'check_email_verify'
         _email = _user['email2'] if _user['email2'] else _user['email']
-        if not await check_email_verify(b'POST /api/user/settings/password', _email):
+        if await default_cache.get(b'email_verify\xff' + _email) != get_hash(
+            b'POST /api/user/settings/password',
+            algorithm='md5'
+        ):
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
             res = response_err(background_tasks, log)
             await sleep(2 + random() * 2)

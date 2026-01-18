@@ -291,8 +291,9 @@ session_token除外，因为是JSON，不能以字节形式保存。
   - 支持异步，需要额外的异步数据库驱动
 - aiosqlite
   - 异步SQLite数据库驱动
-- uuid7
+- ~~uuid7~~
   - 生成UUIDv7
+  - 从3.14开始内置
 - aiocache[redis]
   - 异步函数缓存，减少数据库访问
   - 支持Redis，Memcached，Memory

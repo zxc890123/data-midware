@@ -253,10 +253,3 @@ async def delete_old_nonce(
             [x for x in _nonce if x >= nonce],
             ttl=system_config.user_session_expire * 60
         )
-
-
-async def check_email_verify(api: bytes, hashed_email: bytes) -> bool:
-    hashed_to = get_hash(api, algorithm='md5')
-    if await default_cache.get(b'email_verify\xff' + hashed_email) != hashed_to:
-        return False
-    return True

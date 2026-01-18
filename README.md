@@ -47,7 +47,7 @@
 ```bash
 git clone https://github.com/zxc890123/data-midware.git
 cd data-midware
-pip install -r requirements.txt
+pip install .
 python -m data_midware
 ```
 

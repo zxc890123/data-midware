@@ -16,7 +16,6 @@ from .param import (
     MFAUpdateDataModel
 )
 
-from ..._share.instance import default_cache
 from ..._share.db import session_factory
 from ..._share.crypto import CryptoAES
 from ..._share.sql import (
@@ -193,7 +192,8 @@ async def app_update_mfa(
             session,
             TB_APPS_MFA_OTHER,
             log.user_info,
-            'PUT /api/app/mfa'
+            'PUT /api/app/mfa',
+            log.session_id
         )
         if _email == b'':
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
@@ -234,9 +234,6 @@ async def app_update_mfa(
         )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         if _mark == 'check_secret':
@@ -270,7 +267,8 @@ async def app_export_mfa(
             session,
             TB_APPS_MFA_OTHER,
             log.user_info,
-            'GET /api/app/mfa'
+            'GET /api/app/mfa',
+            log.session_id
         )
         if _email == b'':
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
@@ -286,9 +284,6 @@ async def app_export_mfa(
             in_={'user_id': [log.user_id], 'id': [id]}
         )
         data = {'secret': log.aes.encrypt(_aes.decrypt(results[0]['secret']))}
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -320,7 +315,8 @@ async def app_delete_mfa(
             session,
             TB_APPS_MFA_OTHER,
             log.user_info,
-            'DELETE /api/app/mfa'
+            'DELETE /api/app/mfa',
+            log.session_id
         )
         if _email == b'':
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
@@ -344,9 +340,6 @@ async def app_delete_mfa(
             )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
@@ -425,7 +418,8 @@ async def app_update_mfa_settings(
             session,
             TB_APPS_MFA_OTHER,
             log.user_info,
-            'PUT /api/app/mfa/settings'
+            'PUT /api/app/mfa/settings',
+            log.session_id
         )
         if _email == b'':
             log.res_error = ErrorCode.VERIFY_EMAIL_NOT_FOUND
@@ -442,9 +436,6 @@ async def app_update_mfa_settings(
         )
         _mark = 'session.commit'
         await session.commit()
-        if _email:
-            _mark = 'default_cache.delete'
-            await default_cache.delete(b'email_verify\xff' + _email)
     except Exception as identifier:
         log.res_error = ErrorCode.SERVER_INTERNAL_ERROR
         log.internal_error = _mark
